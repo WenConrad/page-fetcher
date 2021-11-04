@@ -7,28 +7,32 @@ const readline = require('readline').createInterface({
 const URL = process.argv.slice(2, 3).toString();
 const localFilePath = process.argv.slice(3, 4).toString();
 
+const writeToFile = (path, data) => {
+  fs.writeFile(path, data, (err) => {
+    if (err) throw err;
+    console.log(`Downloaded and saved ${data.length} bytes to ${path}`);
+  })
+};
 
 request(URL, (error, response, body) => {
   if (response.statusCode !== 200) {
-    throw error;
+    throw Error(`Error ${response.statusCode}`);
   }
-  fs.exists(localFilePath, function(isExist) {
-    if (!isExist) {
-      fs.writeFile(localFilePath, body, (err) => {
-        if (err) throw err;
-        console.log('File written.');
-        process.exit();
-      });
-    } else {
-      readline.question("File already exists. Enter [y] to overwrite.\n", (ans) => {
-        if (ans === "y") {
-          fs.writeFile(localFilePath, body, (err) => {
-            if (err) throw err;
-            console.log('File overwritten.');
-            readline.close();
-          });
+  fs.exists(localFilePath, (isExist) => {
+    if (isExist) {
+      readline.question("File already exists. Overwrite? [Y/N]\n", (ans) => {
+        if (ans !== "y") {
+          console.log("Operation aborted.");
+          readline.close();
+        } else {
+          console.log("Overwriting file...")
+          writeToFile(localFilePath, body);
+          readline.close();
         }
-      });
+      })
+    } else {
+    writeToFile(localFilePath, body);
+    readline.close();
     }
-  });
+  })
 });
