@@ -10,24 +10,25 @@ const localFilePath = process.argv.slice(3, 4).toString();
 
 request(URL, (error, response, body) => {
   if (response.statusCode !== 200) {
-    throw error
+    throw error;
   }
-  fs.exists(localFilePath, function (isExist) {
+  fs.exists(localFilePath, function(isExist) {
     if (!isExist) {
       fs.writeFile(localFilePath, body, (err) => {
-        if (err) throw err
+        if (err) throw err;
         console.log('File written.');
-      })
+        process.exit();
+      });
     } else {
       readline.question("File already exists. Enter [y] to overwrite.\n", (ans) => {
         if (ans === "y") {
           fs.writeFile(localFilePath, body, (err) => {
-            if (err) throw err
+            if (err) throw err;
             console.log('File overwritten.');
             readline.close();
-          })
+          });
         }
-      })
+      });
     }
   });
 });
