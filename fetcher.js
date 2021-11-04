@@ -1,13 +1,33 @@
 const request = require('request');
 const fs = require('fs');
-const URL = process.argv.slice(2, 3);
-const localFilePath = process.argv.slice(3, 4);
+const readline = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+const URL = process.argv.slice(2, 3).toString();
+const localFilePath = process.argv.slice(3, 4).toString();
 
-request('http://example.edu', (error, response, body) => {
-  console.log('error:', error); // Print the error if one occurred
-  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-  fs.writeFile('./example.html', body, function (err) {
-    if (err) throw err;
-    console.log('File is created successfully.');
+
+request(URL, (error, response, body) => {
+  if (response.statusCode !== 200) {
+    throw error
+  }
+  fs.exists(localFilePath, function (isExist) {
+    if (!isExist) {
+      fs.writeFile(localFilePath, body, (err) => {
+        if (err) throw err
+        console.log('File written.');
+      })
+    } else {
+      readline.question("File already exists. Enter [y] to overwrite.\n", (ans) => {
+        if (ans === "y") {
+          fs.writeFile(localFilePath, body, (err) => {
+            if (err) throw err
+            console.log('File overwritten.');
+            readline.close();
+          })
+        }
+      })
+    }
   });
 });
