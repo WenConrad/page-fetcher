@@ -11,12 +11,12 @@ const writeToFile = (path, data) => {
   fs.writeFile(path, data, (err) => {
     if (err) throw err;
     console.log(`Downloaded and saved ${data.length} bytes to ${path}`);
-  })
+  });
 };
 
 request(URL, (error, response, body) => {
-  if (response.statusCode !== 200) {
-    throw Error(`Error ${response.statusCode}`);
+  if (!response || response.statusCode !== 200) {
+    throw error;
   }
   fs.exists(localFilePath, (isExist) => {
     if (isExist) {
@@ -25,14 +25,14 @@ request(URL, (error, response, body) => {
           console.log("Operation aborted.");
           readline.close();
         } else {
-          console.log("Overwriting file...")
+          console.log("Overwriting file...");
           writeToFile(localFilePath, body);
           readline.close();
         }
-      })
+      });
     } else {
-    writeToFile(localFilePath, body);
-    readline.close();
+      writeToFile(localFilePath, body);
+      readline.close();
     }
-  })
+  });
 });
